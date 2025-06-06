@@ -5,6 +5,7 @@ const dotenv = require('dotenv');
 const cloudinary = require('cloudinary').v2;
 const path = require('path');
 const connectDB = require('./config/db');
+const authRoutes = require('./routes/auth');
 
 
 // Load environment variables
@@ -16,6 +17,7 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true }));
+app.use('/api/auth', authRoutes);
 
 // MongoDB connection
 mongoose.connect(process.env.MONGO_URI, {
