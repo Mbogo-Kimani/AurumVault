@@ -1,7 +1,7 @@
 // utils/cloudinary.js
 // utils/cloudinary.js
 const cloudinary = require('cloudinary').v2;
-const { CloudinaryStorage } = require('multer-storage-cloudinary');
+
 const dotenv = require('dotenv');
 const DatauriParser = require('datauri/parser');
 const path = require('path');
