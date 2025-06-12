@@ -4,7 +4,7 @@ const authController = require('../controllers/authController');
 const { auth, adminOnly } = require('../middlewares/auth');
 
 
-router.post('/register', authController.register);
+router.post('/register', auth, adminOnly, authController.register);
 router.post('/login', authController.login);
 router.get('/users', auth, adminOnly, authController.getAllUsers);
 router.put('/users/:id', auth, adminOnly, authController.editUser);

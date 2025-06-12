@@ -6,6 +6,8 @@ const cloudinary = require('cloudinary').v2;
 const path = require('path');
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/auth');
+const messageRoutes = require('./routes/message');
+const productRoutes = require('./routes/productRoutes');
 
 
 // Load environment variables
@@ -18,11 +20,12 @@ app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use('/api/auth', authRoutes);
+app.use('/api/messages', messageRoutes);
+app.use('/api/products', productRoutes);
 
 // MongoDB connection
 mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
+  
 })
 .then(() => console.log('✅ MongoDB connected'))
 .catch((err) => console.error('❌ MongoDB connection error:', err));
