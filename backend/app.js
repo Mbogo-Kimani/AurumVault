@@ -8,6 +8,7 @@ const connectDB = require('./config/db');
 const authRoutes = require('./routes/auth');
 const messageRoutes = require('./routes/message');
 const productRoutes = require('./routes/productRoutes');
+const paymentRoutes = require('./routes/paymentRoutes');
 
 
 // Load environment variables
@@ -22,6 +23,9 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api/auth', authRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/products', productRoutes);
+app.use('/api/payments', paymentRoutes);
+app.use('/api/payments', require('./routes/paymentRoutes'));
+
 
 // MongoDB connection
 mongoose.connect(process.env.MONGO_URI, {
