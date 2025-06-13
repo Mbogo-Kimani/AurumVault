@@ -24,7 +24,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/payments', paymentRoutes);
-app.use('/api/payments', require('./routes/paymentRoutes'));
+
 
 
 // MongoDB connection
