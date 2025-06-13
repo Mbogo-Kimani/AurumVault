@@ -4,7 +4,8 @@ const { getAccessToken, getTimestamp, generatePassword } = require('../utils/mpe
 
 const businessShortCode = process.env.MPESA_PAYBILL;
 const passkey = process.env.MPESA_PASSKEY;
-const callbackURL = `${process.env.BASE_URL}/api/payments/stk-callback`;
+const callbackURL = 'https://aurumvault.onrender.com/api/payments/stk/callback';
+
 
 exports.initiateStkPush = async (req, res) => {
   try {
