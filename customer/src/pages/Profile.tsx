@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useOrders } from '../hooks/useApi';
-import { Truck, MapPin, CheckCircle, Clock, LogOut, RefreshCw, ArrowRight, ShoppingBag, Package, XCircle } from 'lucide-react';
+import { Truck, MapPin, CheckCircle, Clock, LogOut, RefreshCw, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../services/api';

@@ -1,4 +1,3 @@
-import React from 'react';
 import { useWishlist } from '../contexts/WishlistContext';
 import { useCart } from '../contexts/CartContext';
 import { Link } from 'react-router-dom';
