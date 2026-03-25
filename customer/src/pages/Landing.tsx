@@ -6,7 +6,7 @@ const Landing = () => {
   const { data: featuredProducts, isLoading } = useProducts({ limit: 4 });
 
   return (
-    <div className="pt-20">
+    <div className="w-full">
       {/* Hero Section */}
       <section className="relative h-[90vh] flex items-center justify-center overflow-hidden bg-black">
         <div className="absolute inset-0 opacity-60">
