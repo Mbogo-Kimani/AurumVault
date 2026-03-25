@@ -35,7 +35,7 @@ exports.welcomeEmail = ({ userName }) => {
     ${titleSerif(`Welcome to the Private Vault, ${userName}.`)}
     ${paragraph('We are honored to have you join our exclusive inner circle. As a member of AurumVault, you now have privileged access to our curated collections of masterful craftsmanship, bespoke commissions, and private acquisitions.')}
     ${paragraph('Expect uncompromising luxury, timeless elegance, and exceptional service.')}
-    ${button('Explore The Collections', 'https://aurumvault.vercel.app/shop')}
+    ${button('Explore The Collections', 'https://aurumstore.vercel.app/shop')}
   `;
   return layout('Welcome to AurumVault', content);
 };
@@ -46,7 +46,7 @@ exports.subscriptionWelcomeEmail = () => {
     ${titleSerif('Welcome to the Vault.')}
     ${paragraph('Thank you for subscribing to our exclusive newsletter. As a member of our inner circle, you will receive privileged early access to our private collections, bespoke commissions, and insider vault dispatches.')}
     ${paragraph('Expect uncompromising luxury delivered straight to your inbox.')}
-    ${button('View Latest Arrivals', 'https://aurumvault.vercel.app/shop')}
+    ${button('View Latest Arrivals', 'https://aurumstore.vercel.app/shop')}
   `;
   return layout('AurumVault Inner Circle', content);
 };
@@ -116,7 +116,7 @@ exports.orderConfirmationEmail = ({ userName, orderId, orderItems, totalAmount, 
     </div>
 
     ${deliveryInfo}
-    ${button('Access Your Profile', 'https://aurumvault.vercel.app/profile')}
+    ${button('Track Your Order', 'https://aurumstore.vercel.app/profile')}
   `;
   return layout(`Order Confirmation #${orderId.slice(-6).toUpperCase()}`, content);
 };
@@ -144,7 +144,7 @@ exports.paymentConfirmationEmail = ({ userName, amount, transactionRef, orderId 
       </table>
     </div>
 
-    ${button('View Order Details', 'https://aurumvault.vercel.app/profile')}
+    ${button('View Portfolio', 'https://aurumstore.vercel.app/profile')}
   `;
   return layout('Payment Remittance Notice', content);
 };
