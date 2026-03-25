@@ -1,5 +1,11 @@
 export const api = async (endpoint: string, options: any = {}) => {
-  const baseUrl = import.meta.env.VITE_API_URL?.replace(/\/$/, '') || 'https://aurumvault-w632.onrender.com/api';
+  const getBaseUrl = () => {
+    const url = import.meta.env.VITE_API_URL || 'https://aurumvault-w632.onrender.com/api';
+    if (url.endsWith('/api')) return url;
+    if (url.endsWith('/')) return `${url}api`;
+    return `${url}/api`;
+  };
+  const baseUrl = getBaseUrl();
   
   let token = null;
   try {
