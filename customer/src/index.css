@@ -1,0 +1,113 @@
+@import "tailwindcss";
+
+@theme {
+  --color-luxury-gold: #C9A14A;
+  --color-luxury-black: #000000;
+  --color-luxury-white: #FFFFFF;
+  --color-luxury-cream: #F5F5F5;
+  --color-luxury-charcoal: #333333;
+  --color-luxury-gray-100: #F9F9F9;
+  --color-luxury-gray-200: #EEEEEE;
+  --color-luxury-gray-300: #CCCCCC;
+  --color-luxury-gray-400: #999999;
+  --color-luxury-gray-500: #666666;
+  --color-luxury-gray-800: #1A1A1A;
+  
+  --font-serif: "Playfair Display", serif;
+  --font-sans: "Inter", sans-serif;
+  
+  --spacing-18: 4.5rem;
+  --spacing-22: 5.5rem;
+  
+  --letter-spacing-luxury: 0.15em;
+  
+  --color-accent: var(--color-luxury-gold);
+}
+
+@layer base {
+  body {
+    background-color: white;
+    color: black;
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-serif);
+  }
+}
+
+/* Luxury Component Classes using Standard CSS + Theme Variables */
+.btn-primary {
+  background-color: var(--color-luxury-black);
+  color: var(--color-luxury-white);
+  padding: 0.75rem 2rem;
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-luxury);
+  transition: background-color 0.3s ease;
+}
+
+.btn-primary:hover {
+  background-color: var(--color-luxury-charcoal);
+}
+
+.btn-outline {
+  border: 1px solid var(--color-luxury-black);
+  color: var(--color-luxury-black);
+  padding: 0.75rem 2rem;
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-luxury);
+  transition: all 0.3s ease;
+}
+
+.btn-outline:hover {
+  background-color: var(--color-luxury-black);
+  color: var(--color-luxury-white);
+}
+
+.btn-gold {
+  background-color: var(--color-accent);
+  color: var(--color-luxury-white);
+  padding: 0.75rem 2rem;
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-luxury);
+  transition: opacity 0.3s ease;
+}
+
+.btn-gold:hover {
+  opacity: 0.9;
+}
+
+.nav-link {
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-luxury);
+  transition: color 0.3s ease;
+}
+
+.nav-link:hover {
+  color: var(--color-accent);
+}
+
+.product-title {
+  font-size: 1.125rem;
+  font-family: var(--font-serif);
+  margin-bottom: 0.5rem;
+}
+
+.product-price {
+  font-size: 0.875rem;
+  letter-spacing: var(--letter-spacing-luxury);
+  color: var(--color-luxury-charcoal);
+}
+
+/* Custom animations */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fade-in 1s ease-out forwards;
+}
