@@ -4,36 +4,42 @@ const base64 = require('base-64');
 // ✅ In-memory token cache — Safaricom tokens are valid for 3600s (1 hour)
 let _cachedToken = null;
 let _tokenExpiresAt = 0;
-let _credentialSnapshot = null; // Detects .env credential changes at runtime
+let _credentialSnapshot = null; // Detects .env credential/environment changes at runtime
 
 const _fetchFreshToken = async () => {
-  const { MPESA_CONSUMER_KEY, MPESA_CONSUMER_SECRET } = process.env;
+  const { MPESA_CONSUMER_KEY, MPESA_CONSUMER_SECRET, MPESA_ENV } = process.env;
+  const isProduction = MPESA_ENV === 'production';
+
+  const oauthUrl = isProduction
+    ? 'https://api.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials'
+    : 'https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials';
+
   const auth = base64.encode(`${MPESA_CONSUMER_KEY}:${MPESA_CONSUMER_SECRET}`);
 
-  const res = await axios.get(
-    'https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials',
-    {
-      headers: { Authorization: `Basic ${auth}` },
-    }
-  );
+  console.log(`🔑 Fetching M-Pesa token [${isProduction ? 'PRODUCTION' : 'SANDBOX'}]`);
+
+  const res = await axios.get(oauthUrl, {
+    headers: { Authorization: `Basic ${auth}` },
+  });
 
   _cachedToken = res.data.access_token;
   const expiresIn = (res.data.expires_in || 3600) * 1000;
   _tokenExpiresAt = Date.now() + expiresIn;
-  _credentialSnapshot = `${MPESA_CONSUMER_KEY}:${MPESA_CONSUMER_SECRET}`;
+  // Include env in snapshot so toggling MPESA_ENV also busts the cache
+  _credentialSnapshot = `${MPESA_ENV}:${MPESA_CONSUMER_KEY}:${MPESA_CONSUMER_SECRET}`;
 
   return _cachedToken;
 };
 
 exports.getAccessToken = async () => {
   const now = Date.now();
-  const { MPESA_CONSUMER_KEY, MPESA_CONSUMER_SECRET } = process.env;
-  const currentCredentials = `${MPESA_CONSUMER_KEY}:${MPESA_CONSUMER_SECRET}`;
+  const { MPESA_CONSUMER_KEY, MPESA_CONSUMER_SECRET, MPESA_ENV } = process.env;
+  const currentCredentials = `${MPESA_ENV}:${MPESA_CONSUMER_KEY}:${MPESA_CONSUMER_SECRET}`;
 
-  // Bust cache if credentials changed in .env
+  // Bust cache if credentials or environment changed in .env
   const credentialsChanged = _credentialSnapshot && _credentialSnapshot !== currentCredentials;
   if (credentialsChanged) {
-    console.log('🔄 M-Pesa credentials changed — refreshing access token');
+    console.log('🔄 M-Pesa credentials/environment changed — refreshing access token');
     _cachedToken = null;
     _tokenExpiresAt = 0;
   }

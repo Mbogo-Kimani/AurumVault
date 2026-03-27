@@ -7,6 +7,14 @@ const businessShortCode = process.env.MPESA_PAYBILL;
 const passkey = process.env.MPESA_PASSKEY;
 const callbackURL = `${process.env.MPESA_CALLBACK_URL}/api/payments/stk/callback`;
 
+// 🌐 Environment-aware Safaricom base URL
+const isProduction = process.env.MPESA_ENV === 'production';
+const MPESA_BASE_URL = isProduction
+  ? 'https://api.safaricom.co.ke'
+  : 'https://sandbox.safaricom.co.ke';
+
+console.log(`💳 M-Pesa mode: ${isProduction ? 'PRODUCTION' : 'SANDBOX'} | ShortCode: ${businessShortCode}`);
+
 // 📦 STK INITIATION
 exports.initiateStkPush = async (req, res) => {
   try {
@@ -64,7 +72,7 @@ exports.initiateStkPush = async (req, res) => {
       const password = generatePassword(businessShortCode, passkey, timestamp);
       try {
         return await axios.post(
-          'https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest',
+          `${MPESA_BASE_URL}/mpesa/stkpush/v1/processrequest`,
           {
             BusinessShortCode: businessShortCode,
             Password: password,
@@ -220,7 +228,7 @@ exports.checkStkStatusQuery = async (req, res) => {
       const password = generatePassword(businessShortCode, passkey, timestamp);
       try {
         return await axios.post(
-          'https://sandbox.safaricom.co.ke/mpesa/stkpushquery/v1/query',
+          `${MPESA_BASE_URL}/mpesa/stkpushquery/v1/query`,
           {
             BusinessShortCode: businessShortCode,
             Password: password,
