@@ -46,7 +46,7 @@ const saleSchema = new mongoose.Schema({
   },
   deliveryStatus: {
     type: String,
-    enum: ['Pending', 'Processing', 'In-Transit', 'Delivered', 'Received', 'Returned'],
+    enum: ['Pending', 'Processing', 'In-Transit', 'Delivered', 'Received', 'Returned', 'Failed'],
     default: 'Pending',
   },
   isReturnRequested: {

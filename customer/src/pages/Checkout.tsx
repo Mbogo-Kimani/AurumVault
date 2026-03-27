@@ -29,8 +29,11 @@ const Checkout = () => {
     if (!checkoutRequestID || !isPolling) return;
 
     const startTime = Date.now();
-    const TIMEOUT_MS = 60000; // 60 seconds
+    const TIMEOUT_MS = 90000; // 90 seconds
+    let consecutiveErrors = 0;
+    const MAX_ERRORS = 3;
 
+    // 15s interval — Safaricom sandbox allows max 5 req/min (one every 12s minimum)
     const interval = setInterval(async () => {
       if (Date.now() - startTime > TIMEOUT_MS) {
         setIsPolling(false);
@@ -42,6 +45,7 @@ const Checkout = () => {
 
       try {
         const res = await api.get(`/payments/stk/${checkoutRequestID}/status`);
+        consecutiveErrors = 0; // reset on success
         const { status, reason } = res.data;
 
         if (status === 'Success') {
@@ -54,11 +58,18 @@ const Checkout = () => {
           setCheckoutRequestID(null);
           showToast(`Payment failed: ${reason || 'Transaction cancelled'}`, 'error');
         }
-        // If Pending, do nothing, keep polling
+        // If Pending, do nothing — keep polling
       } catch (err) {
-        console.error('Polling error:', err);
+        consecutiveErrors++;
+        console.warn(`STK polling error (${consecutiveErrors}/${MAX_ERRORS}):`, err);
+        if (consecutiveErrors >= MAX_ERRORS) {
+          setIsPolling(false);
+          setCheckoutRequestID(null);
+          clearInterval(interval);
+          showToast('Unable to verify payment status. Check your M-Pesa messages.', 'error');
+        }
       }
-    }, 4000);
+    }, 15000); // ✅ 15 seconds — stays under Safaricom's 5 req/min cap
 
     return () => clearInterval(interval);
   }, [checkoutRequestID, isPolling, clearCart, showToast]);

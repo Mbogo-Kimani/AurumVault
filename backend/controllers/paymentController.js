@@ -245,12 +245,24 @@ exports.checkStkStatusQuery = async (req, res) => {
 
   } catch (err) {
     const errorBody = err.response?.data;
+
+    // 🔒 "Transaction still being processed" - normal Safaricom response
     if (errorBody && errorBody.errorCode === '500.001.1001') {
-      // "The transaction is being processed" -> This is a normal Safaricom response for still pending
       return res.status(200).json({ status: 'Pending' });
     }
-    
-    // Safaricom query errors natively log but we just tell UI it's still pending
+
+    // 🚫 Incapsula/WAF HTML block - Safaricom's CDN blocked us (usually after rate-limit)
+    if (typeof errorBody === 'string' && errorBody.includes('Incapsula')) {
+      // Silently return Pending - frontend will back off via its own timeout
+      return res.status(200).json({ status: 'Pending' });
+    }
+
+    // ⏱️ Spike Arrest (rate-limit) - slow down, mark as Pending
+    if (errorBody?.fault?.faultstring?.includes('SpikeArrestViolation')) {
+      console.warn('⚠️ Safaricom rate-limit hit - backing off');
+      return res.status(200).json({ status: 'Pending' });
+    }
+
     console.error('⚠️ STK Status Query Error:', errorBody || err.message);
     res.status(200).json({ status: 'Pending' });
   }
