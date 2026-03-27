@@ -1,7 +1,7 @@
 const axios = require('axios');
 const Sale = require('../models/Sale');
 const Product = require('../models/Product');
-const { getAccessToken, getTimestamp, generatePassword } = require('../utils/mpesa');
+const { getAccessToken, getTimestamp, generatePassword, invalidateTokenCache } = require('../utils/mpesa');
 
 const businessShortCode = process.env.MPESA_PAYBILL;
 const passkey = process.env.MPESA_PASSKEY;
@@ -52,37 +52,46 @@ exports.initiateStkPush = async (req, res) => {
       });
     }
 
-    const accessToken = await getAccessToken();
-    const timestamp = getTimestamp();
-    const password = generatePassword(businessShortCode, passkey, timestamp);
-
-    // Normalize callback URL (strip trailing slash from base if present)
     const baseCallback = process.env.MPESA_CALLBACK_URL ? process.env.MPESA_CALLBACK_URL.replace(/\/$/, '') : '';
     const fullCallbackURL = `${baseCallback}/api/payments/stk/callback`;
 
     console.log('🚀 Initiating STK Push for:', phoneNumber, 'Amount:', amount);
-    
-    const response = await axios.post(
-      'https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest',
-      {
-        BusinessShortCode: businessShortCode,
-        Password: password,
-        Timestamp: timestamp,
-        TransactionType: 'CustomerPayBillOnline',
-        Amount: amount,
-        PartyA: phoneNumber,
-        PartyB: businessShortCode,
-        PhoneNumber: phoneNumber,
-        CallBackURL: fullCallbackURL,
-        AccountReference: 'AurumVault',
-        TransactionDesc: transactionDesc,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
+
+    // 🔄 Auto-retry once on Invalid Access Token (e.g. after .env credential change)
+    const doStkPush = async (isRetry = false) => {
+      const accessToken = await getAccessToken();
+      const timestamp = getTimestamp();
+      const password = generatePassword(businessShortCode, passkey, timestamp);
+      try {
+        return await axios.post(
+          'https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest',
+          {
+            BusinessShortCode: businessShortCode,
+            Password: password,
+            Timestamp: timestamp,
+            TransactionType: 'CustomerPayBillOnline',
+            Amount: amount,
+            PartyA: phoneNumber,
+            PartyB: businessShortCode,
+            PhoneNumber: phoneNumber,
+            CallBackURL: fullCallbackURL,
+            AccountReference: 'AurumVault',
+            TransactionDesc: transactionDesc,
+          },
+          { headers: { Authorization: `Bearer ${accessToken}` } }
+        );
+      } catch (stkErr) {
+        const code = stkErr.response?.data?.errorCode;
+        if (!isRetry && code === '404.001.03') {
+          console.warn('⚠️ Invalid token on STK push — clearing cache and retrying...');
+          invalidateTokenCache();
+          return doStkPush(true);
+        }
+        throw stkErr;
       }
-    );
+    };
+
+    const response = await doStkPush();
 
     const checkoutRequestID = response.data.CheckoutRequestID;
 
@@ -204,20 +213,34 @@ exports.checkStkStatusQuery = async (req, res) => {
     // Still pending, ping Safaricom STK Push Query API
     if (!businessShortCode || !passkey) return res.status(200).json({ status: 'Pending' });
 
-    const accessToken = await getAccessToken();
-    const timestamp = getTimestamp();
-    const password = generatePassword(businessShortCode, passkey, timestamp);
+    // 🔄 Auto-retry once on Invalid Access Token
+    const doStkQuery = async (isRetry = false) => {
+      const accessToken = await getAccessToken();
+      const timestamp = getTimestamp();
+      const password = generatePassword(businessShortCode, passkey, timestamp);
+      try {
+        return await axios.post(
+          'https://sandbox.safaricom.co.ke/mpesa/stkpushquery/v1/query',
+          {
+            BusinessShortCode: businessShortCode,
+            Password: password,
+            Timestamp: timestamp,
+            CheckoutRequestID: checkoutRequestId,
+          },
+          { headers: { Authorization: `Bearer ${accessToken}` } }
+        );
+      } catch (qErr) {
+        const code = qErr.response?.data?.errorCode;
+        if (!isRetry && code === '404.001.03') {
+          console.warn('⚠️ Invalid token on STK query — clearing cache and retrying...');
+          invalidateTokenCache();
+          return doStkQuery(true);
+        }
+        throw qErr;
+      }
+    };
 
-    const response = await axios.post(
-      'https://sandbox.safaricom.co.ke/mpesa/stkpushquery/v1/query',
-      {
-        BusinessShortCode: businessShortCode,
-        Password: password,
-        Timestamp: timestamp,
-        CheckoutRequestID: checkoutRequestId,
-      },
-      { headers: { Authorization: `Bearer ${accessToken}` } }
-    );
+    const response = await doStkQuery();
 
     const data = response.data;
     const resultCode = data.ResultCode;
