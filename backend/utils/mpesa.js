@@ -1,7 +1,18 @@
 const axios = require('axios');
 const base64 = require('base-64');
 
+// ✅ In-memory token cache — Safaricom tokens are valid for 3600s (1 hour)
+let _cachedToken = null;
+let _tokenExpiresAt = 0;
+
 exports.getAccessToken = async () => {
+  const now = Date.now();
+
+  // Return cached token if still valid (with 60s buffer before expiry)
+  if (_cachedToken && now < _tokenExpiresAt - 60000) {
+    return _cachedToken;
+  }
+
   const { MPESA_CONSUMER_KEY, MPESA_CONSUMER_SECRET } = process.env;
   const auth = base64.encode(`${MPESA_CONSUMER_KEY}:${MPESA_CONSUMER_SECRET}`);
 
@@ -14,7 +25,12 @@ exports.getAccessToken = async () => {
     }
   );
 
-  return res.data.access_token;
+  _cachedToken = res.data.access_token;
+  // expires_in is in seconds; convert to ms epoch
+  const expiresIn = (res.data.expires_in || 3600) * 1000;
+  _tokenExpiresAt = now + expiresIn;
+
+  return _cachedToken;
 };
 
 exports.getTimestamp = () => {
